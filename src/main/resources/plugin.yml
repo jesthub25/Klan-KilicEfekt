@@ -1,0 +1,64 @@
+name: ClanSwordPlugin
+version: '${project.version}'
+main: com.jestron.clanplugin.ClanPlugin
+api-version: '1.16'
+softdepend: [Vault, PlaceholderAPI, WorldGuard]
+authors: [Jestron]
+description: 'Klan ve Kılıç Efekt Sistemi (Spigot/Paper/Purpur 1.16.5 - 1.21.x)'
+
+commands:
+  klan:
+    description: Klan komutları
+    usage: /klan <alt komut>
+    aliases: [clan]
+  kilicefekt:
+    description: Kılıç efekt komutları
+    usage: /kilicefekt <ekle|kaldır>
+  kilicefektgui:
+    description: Kılıç efekt yönetim menüsü
+    usage: /kilicefektgui
+
+permissions:
+  clan.reload:
+    default: op
+    description: /klan reload
+  clansword.kilicefekt.ekle:
+    default: op
+    description: Elindeki kılıca efekt ekleme
+  clansword.kilicefekt.kaldir:
+    default: op
+    description: Elindeki kılıçtan efekt kaldırma
+  clansword.kilicefekt.gui:
+    default: op
+    description: Efekt yönetim menüsü (aç/kapat, kopya al)
+  clansword.kilicefekt.*:
+    default: op
+    description: Tüm kılıç efekt yönetim yetkileri
+    children:
+      clansword.kilicefekt.ekle: true
+      clansword.kilicefekt.kaldir: true
+      clansword.kilicefekt.gui: true
+  clansword.effect.*:
+    default: true
+    description: Tüm kılıç efektlerini kullanma (config'te sword.check-effect-permission açıksa kontrol edilir)
+    children:
+      clansword.effect.spider: true
+      clansword.effect.enderman: true
+      clansword.effect.wither: true
+      clansword.effect.kurbaga: true
+      clansword.effect.shulker: true
+      clansword.effect.ejderha: true
+      clansword.effect.golemd: true
+      clansword.effect.golemk: true
+      clansword.effect.pillager: true
+      clansword.effect.cadi: true
+      clansword.effect.creeper: true
+      clansword.effect.blaze: true
+      clansword.effect.ghast: true
+      clansword.effect.warden: true
+      clansword.effect.yenilenme: true
+      clansword.effect.efektsilen: true
+      clansword.effect.phantom: true
+      clansword.effect.slime: true
+      clansword.effect.freeze: true
+      clansword.effect.kaplumba: true

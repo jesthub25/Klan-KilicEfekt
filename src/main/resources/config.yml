@@ -1,0 +1,45 @@
+# ClanSwordPlugin - Genel Ayarlar
+# Eksik anahtarlar JAR içindeki varsayılanlardan otomatik okunur, dosyayı silmene gerek yok.
+
+clan:
+  max-name-length: 16
+  default-member-limit: 10
+  limit-increase-cost: 10000
+  limit-increase-amount: 5
+  invite-cooldown: 5        # saniye
+  invite-timeout: 60        # saniye
+  ranking-gui-rows: 3       # 1-6
+  friendly-fire: false      # false = aynı klan ve dost klan üyeleri birbirine vuramaz
+
+ally:
+  default-limit: 3
+  limit-increase-cost: 30000
+  invite-cooldown: 60       # saniye
+  invite-timeout: 300       # saniye
+
+sword:
+  # true  = efektler sadece en az bir WorldGuard bölgesinin içinde ve PvP izinliyse çalışır
+  # false = WorldGuard'ın PvP kararı geçerlidir (bölge dışı, __global__ pvp ayarına göre)
+  # WorldGuard kurulu değilse efektler her yerde çalışır.
+  require-pvp-region: false
+  # true yapılırsa clansword.effect.<isim> yetkisi kontrol edilir (varsayılan herkes için açık)
+  check-effect-permission: false
+
+# Database Ayarları (SQLITE veya MYSQL)
+database:
+  type: SQLITE
+  mysql:
+    host: localhost
+    port: 3306
+    database: clanplugin
+    username: root
+    password: password
+    use-ssl: false
+    pool-size: 10
+
+gui:
+  ranking-title: "&6Klan Sıralaması"
+  sword-gui-title: "&cKılıç Efekt Yönetimi"
+
+performance:
+  save-interval: 300        # saniye, otomatik kayıt

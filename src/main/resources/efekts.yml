@@ -1,0 +1,271 @@
+# ClanSwordPlugin - Tüm Efekt Ayarları
+# radius: menzil (blok) | cooldown: bekleme (sn) | duration: süre (sn) | amplifier: seviye
+# Eksik değerler eklentinin varsayılanlarından okunur.
+effects:
+  Spider:
+    enabled: true
+    radius: 5
+    cooldown: 90
+    duration: 3
+    permission: "clansword.effect.spider"
+    sword:
+      name: "§#8A3A02ᴏʀᴜᴍᴄᴇᴋ ᴋıʟıᴄ"
+      lore:
+        - "§#8A3A02▶ &7Menzildeki tüm düşmanlara ağ kurar"
+        - "&eSağ tık &7ile kullan"
+
+  Enderman:
+    enabled: true
+    radius: 0
+    cooldown: 60
+    duration: 3
+    distance: 3          # ışınlanma mesafesi (blok)
+    permission: "clansword.effect.enderman"
+    sword:
+      name: "&0ᴇɴᴅᴇʀᴍᴀɴ ᴋıʟıᴄ"
+      lore:
+        - "&0▶ &7Baktığın yöne ışınlar"
+        - "&eSağ tık &7ile kullan"
+
+  Wither:
+    enabled: true
+    radius: 0
+    cooldown: 60
+    duration: 4
+    permission: "clansword.effect.wither"
+    sword:
+      name: "&0ᴡɪᴛʜᴇʀ ᴋıʟıᴄ"
+      lore:
+        - "&0▶ &7Wither kafası fırlatır"
+        - "&eSağ tık &7ile kullan"
+
+  Kurbaga:
+    enabled: true
+    radius: 5
+    cooldown: 90
+    duration: 2
+    permission: "clansword.effect.kurbaga"
+    sword:
+      name: "&6ᴋᴜʀʙᴀɢᴀ ᴋıʟıᴄ"
+      lore:
+        - "&6▶ &7Düşmanı zıplatır"
+        - "&eSağ tık &7ile kullan"
+
+  Shulker:
+    enabled: true
+    radius: 5
+    cooldown: 20
+    duration: 2
+    permission: "clansword.effect.shulker"
+    sword:
+      name: "&dsʜᴜʟᴋᴇʀ ᴋıʟıᴄ"
+      lore:
+        - "&d▶ &7Menzildeki tüm düşmanları havaya uçurur"
+        - "&eSağ tık &7ile kullan"
+
+  Ejderha:
+    enabled: true
+    radius: 0
+    cooldown: 60
+    duration: 10
+    permission: "clansword.effect.ejderha"
+    sword:
+      name: "&8ᴇᴊᴅᴇʀʜᴀ ᴋıʟıᴄ"
+      lore:
+        - "&8▶ &7Ejderha ateşi fırlatır"
+        - "&eSağ tık &7ile kullan"
+
+  GolemD:
+    enabled: true
+    radius: 0
+    cooldown: 90
+    duration: 3
+    amplifier: 2
+    permission: "clansword.effect.golemd"
+    sword:
+      name: "&fɢᴏʟᴇᴍ ᴅɪʀᴇɴÇ ᴋıʟıᴄ"
+      lore:
+        - "&f▶ &7Direnç 2 verir"
+        - "&eSağ tık &7ile kullan"
+
+  GolemK:
+    enabled: true
+    radius: 0
+    cooldown: 90
+    duration: 3
+    amplifier: 12
+    permission: "clansword.effect.golemk"
+    sword:
+      name: "&4&lGolem Kuvveti Kılıcı"
+      lore:
+        - "&7Efekt: &cGolem Kuvveti"
+        - "&7Durum: &aAKTİF"
+        - ""
+        - "&cKuvvet 12 &7verir!"
+        - "&7Sadece kendine"
+        - "&7Süre: &f3 saniye"
+        - "&eSağ tık &7ile kullan"
+
+  Pillager:
+    enabled: true
+    radius: 0
+    cooldown: 120
+    duration: 20
+    health: 200
+    permission: "clansword.effect.pillager"
+    sword:
+      name: "&8ᴘɪʟʟᴀɢᴇʀ ᴋıʟıᴄ"
+      lore:
+        - "&8▶ &7Pillager çağırır"
+        - "&eSağ tık &7ile kullan"
+
+  Cadi:
+    enabled: true
+    radius: 5
+    cooldown: 60
+    duration: 5
+    permission: "clansword.effect.cadi"
+    sword:
+      name: "&5ᴄᴀᴅɪ ᴋıʟıᴄ"
+      lore:
+        - "&5▶ &7Açlık ve bulantı verir"
+        - "&eSağ tık &7ile kullan"
+
+  Creeper:
+    enabled: true
+    radius: 5
+    cooldown: 90
+    duration: 3
+    permission: "clansword.effect.creeper"
+    sword:
+      name: "&aᴄʀᴇᴇᴘᴇʀ ᴋıʟıᴄ"
+      lore:
+        - "&a▶ &7Patlar, düşmanları fırlatır"
+        - "&eSağ tık &7ile kullan"
+
+  Blaze:
+    enabled: true
+    radius: 4
+    cooldown: 60
+    duration: 3
+    amplifier: 3
+    permission: "clansword.effect.blaze"
+    sword:
+      name: "&eʙʟᴀᴢᴇ ᴋıʟıᴄ"
+      lore:
+        - "&e▶ &7Yakın düşmanları yakarsın"
+        - "&eSağ tık &7ile kullan"
+
+  Ghast:
+    enabled: true
+    radius: 0
+    cooldown: 60
+    duration: 3
+    permission: "clansword.effect.ghast"
+    sword:
+      name: "&fɢʜᴀsᴛ ᴋıʟıᴄ"
+      lore:
+        - "&f▶ &7Ateş topu fırlatır"
+        - "&eSağ tık &7ile kullan"
+
+  Warden:
+    enabled: true
+    radius: 5
+    cooldown: 60
+    duration: 3
+    permission: "clansword.effect.warden"
+    sword:
+      name: "§#0B569Dᴡᴀʀᴅᴇɴ ᴋıʟıᴄ"
+      lore:
+        - "§#0B569D▶ &7Düşmanlara körlük verir"
+        - "&eSağ tık &7ile kullan"
+
+  Yenilenme:
+    enabled: true
+    radius: 0
+    cooldown: 90
+    duration: 3
+    amplifier: 4
+    permission: "clansword.effect.yenilenme"
+    sword:
+      name: "&cCanlanma Kılıcı"
+      lore:
+        - "&7Efekt: &cYenilenme"
+        - "&7Durum: &aAKTİF"
+        - ""
+        - "&cHızlı can yenileme"
+        - "&7Süre: &f3 saniye"
+        - "&eSağ tık &7ile kullan"
+
+  Efektsilen:
+    enabled: true
+    radius: 3
+    cooldown: 90
+    duration: 0
+    permission: "clansword.effect.efektsilen"
+    sword:
+      name: "&2ɢᴀʀᴅɪʏᴀɴ ᴋıʟıᴄ"
+      lore:
+        - "&2▶ &7Düşmanın tüm efektlerini siler"
+        - "&eSağ tık &7ile kullan"
+
+  Phantom:
+    enabled: true
+    radius: 4
+    cooldown: 90
+    duration: 3
+    permission: "clansword.effect.phantom"
+    sword:
+      name: "&1ᴘʜᴀɴᴛᴏᴍ ᴋıʟıᴄ"
+      lore:
+        - "&1▶ &7Düşmanlarına karşı geçici görünmezlik"
+        - "&eSağ tık &7ile kullan"
+
+  Slime:
+    enabled: true
+    radius: 0
+    cooldown: 90
+    duration: 15
+    amplifier: 4
+    permission: "clansword.effect.slime"
+    sword:
+      name: "&aSlime Kılıcı"
+      lore:
+        - "&7Efekt: &aSlime"
+        - "&7Durum: &aAKTİF"
+        - ""
+        - "&aSlime çağırır"
+        - "&7Süre: &f15 saniye"
+        - "&eSağ tık &7ile kullan"
+
+  Freeze:
+    enabled: true
+    radius: 5
+    cooldown: 30
+    duration: 3
+    permission: "clansword.effect.freeze"
+    sword:
+      name: "&bDondurucu Kılıç"
+      lore:
+        - "&7Efekt: &bFreeze"
+        - "&7Durum: &aAKTİF"
+        - "&c&l⚠ &cSadece PvP Regionda çalışır"
+        - ""
+        - "&bDüşmanları dondurur"
+        - "&75 blok radius içinde"
+        - "&7Süre: &f3 saniye"
+        - "&eSağ tık &7ile kullan"
+
+  Kaplumba:
+    enabled: true
+    radius: 5
+    cooldown: 60
+    duration: 3
+    permission: "clansword.effect.kaplumba"
+    sword:
+      name: "&2ᴋᴀᴘʟᴜᴍʙᴀ ᴋıʟıᴄ"
+      lore:
+        - "&2▶ &7Düşmanları yavaşlatır (Yavaşlık 3)"
+        - "&7Radius: &e5 blok"
+        - "&7Süre: &e3 saniye"
+        - "&eSağ tık &7ile kullan"

@@ -1,0 +1,74 @@
+name: Build & Release
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      - name: Derle (mvn package)
+        shell: bash
+        run: |
+          set -o pipefail
+          mvn -B -ntp clean package 2>&1 | tee build.log
+
+      - name: Derleme hatalarını raporla
+        if: failure()
+        shell: bash
+        run: |
+          grep -E "\[ERROR\]|symbol:|location:" build.log | head -80 | while IFS= read -r line; do
+            echo "::error::${line}"
+          done
+
+      - name: JAR'ı doğrula
+        id: jar
+        shell: bash
+        run: |
+          JAR=$(ls target/ClanSwordPlugin-*.jar | grep -v -- '-original' | head -1)
+          echo "path=$JAR" >> "$GITHUB_OUTPUT"
+          echo "JAR: $JAR ($(stat -c%s "$JAR") bytes)"
+          unzip -p "$JAR" plugin.yml | head -6
+          MAJOR=$(unzip -p "$JAR" com/jestron/clanplugin/ClanPlugin.class | od -An -j7 -N1 -tu1 | tr -d ' ')
+          echo "Bytecode major version: $MAJOR (52 = Java 8)"
+          test "$MAJOR" = "52"
+          unzip -l "$JAR" | grep -q 'com/jestron/clanplugin/libs/hikari/HikariDataSource.class'
+          unzip -l "$JAR" | grep -q 'com/jestron/clanplugin/libs/slf4j/'
+          if unzip -l "$JAR" | grep -qE ' org/bukkit/| com/sk89q/| me/clip/| net/milkbowl/| com/zaxxer/| org/slf4j/'; then
+            echo "::error::Sunucunun sağladığı kütüphaneler JAR'a gömülmüş!"
+            exit 1
+          fi
+          echo "JAR doğrulandı."
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ClanSwordPlugin
+          path: ${{ steps.jar.outputs.path }}
+
+      - name: Release yayınla
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION=$(sed -n 's:.*<version>\(.*\)</version>.*:\1:p' pom.xml | head -1)
+          TAG="v$VERSION"
+          JAR="${{ steps.jar.outputs.path }}"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" "$JAR" --clobber
+            gh release edit "$TAG" --notes-file RELEASE_NOTES.md --latest
+          else
+            gh release create "$TAG" "$JAR" --title "ClanSwordPlugin $VERSION" --notes-file RELEASE_NOTES.md --latest
+          fi
