@@ -33,6 +33,7 @@ import com.jestron.clanplugin.sword.effects.SlimeEffect;
 import com.jestron.clanplugin.sword.effects.SpiderEffect;
 import com.jestron.clanplugin.sword.effects.WardenEffect;
 import com.jestron.clanplugin.sword.effects.WitherEffect;
+import com.jestron.clanplugin.util.SelfTest;
 import com.jestron.clanplugin.util.Tags;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandExecutor;
@@ -104,6 +105,7 @@ public final class ClanPlugin extends JavaPlugin {
 
             hookPlaceholderApi(pm);
             startTasks();
+            SelfTest.scheduleIfRequested(this);
 
             getLogger().info("WorldGuard: " + (pm.isPluginEnabled("WorldGuard") ? "bağlandı" : "yok (efektler her yerde çalışır)")
                     + " | Vault: " + (pm.getPlugin("Vault") != null ? "var" : "yok"));

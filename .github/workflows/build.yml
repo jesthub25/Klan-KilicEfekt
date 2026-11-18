@@ -1,4 +1,4 @@
-name: Build & Release
+name: Build, Test & Release
 
 on:
   push:
@@ -11,6 +11,8 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      jar: ${{ steps.jar.outputs.name }}
     steps:
       - uses: actions/checkout@v4
 
@@ -39,7 +41,7 @@ jobs:
         shell: bash
         run: |
           JAR=$(ls target/ClanSwordPlugin-*.jar | grep -v -- '-original' | head -1)
-          echo "path=$JAR" >> "$GITHUB_OUTPUT"
+          echo "name=$(basename "$JAR")" >> "$GITHUB_OUTPUT"
           echo "JAR: $JAR ($(stat -c%s "$JAR") bytes)"
           unzip -p "$JAR" plugin.yml | head -6
           MAJOR=$(unzip -p "$JAR" com/jestron/clanplugin/ClanPlugin.class | od -An -j7 -N1 -tu1 | tr -d ' ')
@@ -56,7 +58,141 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: ClanSwordPlugin
-          path: ${{ steps.jar.outputs.path }}
+          path: target/${{ steps.jar.outputs.name }}
+
+  # Eklentiyi gerçek sunucularda açıp öz-testi çalıştırır.
+  server-test:
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { project: paper,  mc: "1.16.5", java: "11", wg: "true" }
+          - { project: paper,  mc: "1.17.1", java: "17", wg: "false" }
+          - { project: purpur, mc: "1.18.2", java: "17", wg: "true" }
+          - { project: paper,  mc: "1.19.4", java: "17", wg: "false" }
+          - { project: paper,  mc: "1.20.4", java: "17", wg: "true" }
+          - { project: paper,  mc: "1.20.6", java: "21", wg: "false" }
+          - { project: paper,  mc: "1.21.1", java: "21", wg: "true" }
+          - { project: paper,  mc: "1.21.4", java: "21", wg: "true" }
+    name: test ${{ matrix.project }}-${{ matrix.mc }}
+    steps:
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.java }}
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: ClanSwordPlugin
+          path: dist
+
+      - name: Sunucuyu indir
+        shell: bash
+        env:
+          PROJECT: ${{ matrix.project }}
+          MC: ${{ matrix.mc }}
+        run: |
+          set -euo pipefail
+          mkdir -p server/plugins
+          UA="ClanSwordPlugin-CI (github.com/jesthub25/Klan-KilicEfekt)"
+          if [ "$PROJECT" = "purpur" ]; then
+            curl -fsSL -A "$UA" -o server/server.jar "https://api.purpurmc.org/v2/purpur/$MC/latest/download"
+          else
+            URL=$(curl -fsSL -A "$UA" "https://fill.papermc.io/v3/projects/paper/versions/$MC/builds/latest" \
+                  | jq -r '.downloads["server:default"].url // empty' || true)
+            if [ -z "$URL" ]; then
+              BUILDS=$(curl -fsSL -A "$UA" "https://api.papermc.io/v2/projects/paper/versions/$MC/builds")
+              B=$(echo "$BUILDS" | jq -r '.builds[-1].build')
+              N=$(echo "$BUILDS" | jq -r '.builds[-1].downloads.application.name')
+              URL="https://api.papermc.io/v2/projects/paper/versions/$MC/builds/$B/downloads/$N"
+            fi
+            curl -fsSL -A "$UA" -o server/server.jar "$URL"
+          fi
+          ls -la server/server.jar
+          cp dist/*.jar server/plugins/
+
+      - name: WorldEdit + WorldGuard indir (Modrinth)
+        if: matrix.wg == 'true'
+        shell: bash
+        env:
+          MC: ${{ matrix.mc }}
+        run: |
+          set -uo pipefail
+          UA="ClanSwordPlugin-CI (github.com/jesthub25/Klan-KilicEfekt)"
+          fetch() {
+            local slug="$1"
+            local api="https://api.modrinth.com/v2/project/$slug/version?game_versions=%5B%22$MC%22%5D&loaders=%5B%22bukkit%22,%22paper%22,%22spigot%22%5D"
+            local url
+            url=$(curl -fsSL -A "$UA" "$api" | jq -r '[.[] | select(.version_type=="release")][0].files[0].url // empty')
+            if [ -z "$url" ]; then
+              url=$(curl -fsSL -A "$UA" "$api" | jq -r '.[0].files[0].url // empty')
+            fi
+            if [ -n "$url" ]; then
+              curl -fsSL -A "$UA" -o "server/plugins/$slug.jar" "$url" && echo "$slug: $url"
+            else
+              echo "::warning::$slug $MC için bulunamadı, WorldGuard'sız test edilecek"
+            fi
+          }
+          fetch worldedit
+          fetch worldguard
+          if [ ! -f server/plugins/worldedit.jar ] || [ ! -f server/plugins/worldguard.jar ]; then
+            rm -f server/plugins/worldedit.jar server/plugins/worldguard.jar
+            echo "WG_EXPECTED=false" >> "$GITHUB_ENV"
+          else
+            echo "WG_EXPECTED=true" >> "$GITHUB_ENV"
+          fi
+
+      - name: Sunucuyu çalıştır ve öz-testi doğrula
+        shell: bash
+        run: |
+          set -uo pipefail
+          cd server
+          echo "eula=true" > eula.txt
+          cat > server.properties <<'EOF'
+          online-mode=false
+          level-type=flat
+          generate-structures=false
+          spawn-npcs=false
+          spawn-animals=false
+          spawn-monsters=false
+          view-distance=3
+          simulation-distance=3
+          server-port=25565
+          EOF
+          sed -i 's/^ *//' server.properties
+          timeout 600 java -Xmx2G -Dcom.mojang.eula.agree=true \
+            -Dclansword.selftest=true -Dclansword.selftest.shutdown=true \
+            -jar server.jar nogui < /dev/null > console.log 2>&1 || true
+          echo "----- ClanSwordPlugin satırları -----"
+          grep -E "ClanSwordPlugin|SELFTEST|com\.jestron" console.log || true
+          FAIL=0
+          grep -q "SELFTEST PASSED" console.log || { echo "::error::SELFTEST PASSED bulunamadı"; FAIL=1; }
+          if grep -qE "SELFTEST FAILED|Error occurred while (enabling|disabling) ClanSwordPlugin|Could not load 'plugins/ClanSwordPlugin|at com\.jestron\.clanplugin" console.log; then
+            echo "::error::Eklenti hatası tespit edildi"
+            grep -nE -B2 -A15 "SELFTEST FAILED|Error occurred while|Could not load|at com\.jestron\.clanplugin" console.log | head -80
+            FAIL=1
+          fi
+          if [ "${WG_EXPECTED:-false}" = "true" ]; then
+            grep -q "worldguard=true" console.log || { echo "::error::WorldGuard ile test edilemedi"; FAIL=1; }
+          fi
+          if [ "$FAIL" = "1" ]; then
+            echo "----- console.log (son 120 satır) -----"
+            tail -120 console.log
+          fi
+          exit $FAIL
+
+  release:
+    needs: [build, server-test]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: ClanSwordPlugin
+          path: dist
 
       - name: Release yayınla
         shell: bash
@@ -65,7 +201,7 @@ jobs:
         run: |
           VERSION=$(sed -n 's:.*<version>\(.*\)</version>.*:\1:p' pom.xml | head -1)
           TAG="v$VERSION"
-          JAR="${{ steps.jar.outputs.path }}"
+          JAR="dist/${{ needs.build.outputs.jar }}"
           if gh release view "$TAG" >/dev/null 2>&1; then
             gh release upload "$TAG" "$JAR" --clobber
             gh release edit "$TAG" --notes-file RELEASE_NOTES.md --latest
