@@ -121,19 +121,34 @@ jobs:
         run: |
           set -uo pipefail
           UA="ClanSwordPlugin-CI (github.com/jesthub25/Klan-KilicEfekt)"
+          # Bu JVM'nin çalıştırabileceği en yüksek class sürümü (17 -> 61, 21 -> 65 ...)
+          JMAX=$(java -XshowSettings:properties -version 2>&1 | awk -F'= ' '/java.class.version/{print int($2)}')
+          echo "JVM class version max: $JMAX"
+          cat > /tmp/maxclass.py <<'PY'
+          import sys, zipfile
+          z = zipfile.ZipFile(sys.argv[1]); m = 0
+          for n in z.namelist():
+              if n.endswith('.class') and not n.startswith('META-INF/versions/'):
+                  b = z.read(n)[:8]; m = max(m, (b[6] << 8) | b[7])
+          print(m)
+          PY
+          sed -i 's/^          //' /tmp/maxclass.py
           fetch() {
             local slug="$1"
             local api="https://api.modrinth.com/v2/project/$slug/version?game_versions=%5B%22$MC%22%5D&loaders=%5B%22bukkit%22,%22paper%22,%22spigot%22%5D"
-            local url
-            url=$(curl -fsSL -A "$UA" "$api" | jq -r '[.[] | select(.version_type=="release")][0].files[0].url // empty')
-            if [ -z "$url" ]; then
-              url=$(curl -fsSL -A "$UA" "$api" | jq -r '.[0].files[0].url // empty')
-            fi
-            if [ -n "$url" ]; then
-              curl -fsSL -A "$UA" -o "server/plugins/$slug.jar" "$url" && echo "$slug: $url"
-            else
-              echo "::warning::$slug $MC için bulunamadı, WorldGuard'sız test edilecek"
-            fi
+            local urls
+            urls=$(curl -fsSL -A "$UA" "$api" | jq -r '([.[] | select(.version_type=="release")] + [.[] | select(.version_type!="release")]) | .[:10][] | .files[0].url')
+            for url in $urls; do
+              curl -fsSL -A "$UA" -o /tmp/cand.jar "$url" || continue
+              need=$(python3 -I /tmp/maxclass.py /tmp/cand.jar)
+              if [ "$need" -le "$JMAX" ]; then
+                mv /tmp/cand.jar "server/plugins/$slug.jar"
+                echo "$slug: $url (class $need)"
+                return 0
+              fi
+              echo "$slug atlandı (class $need > $JMAX): $url"
+            done
+            echo "::warning::$slug $MC için bu Java ile uyumlu sürüm bulunamadı, WorldGuard'sız test edilecek"
           }
           fetch worldedit
           fetch worldguard
